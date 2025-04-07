@@ -2,15 +2,15 @@ FROM python:alpine
 
 WORKDIR /app
 
-COPY src /app
-
-RUN pip install grpcio\
+RUN pip install --no-cache-dir grpcio\
     grpcio-tools\
     fastapi\
     uvicorn\
     jwcrypto\
-    APScheduler\
     pydantic-settings\
-    httpx
+    httpx\
+    redis
+
+COPY src /app
 
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--proxy-headers", "--forwarded-allow-ips", "*"]

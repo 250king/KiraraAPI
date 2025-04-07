@@ -1,5 +1,5 @@
-import hashlib
+import base64
 
 
-def email_hash(email: str) -> str:
-    return hashlib.md5(email.encode()).hexdigest()
+def email_encode(email: str) -> str:
+    return base64.b64encode(email.encode()).decode()

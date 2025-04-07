@@ -1,24 +1,24 @@
 import secrets
 import redis
+from fastapi import HTTPException
 import util.xray.app.proxyman.command.command_pb2 as command
 from env import Env
-from fastapi import HTTPException
 from model.data.init import InitOperation
 from model.data.user import User
 from util.api import to_typed_message, GrpcClient
 from util.config import make_config
-from util.string import email_hash
+from util.string import email_encode
 from util.xray.common.protocol.user_pb2 import User as XrayUser
 from util.xray.proxy.trojan.config_pb2 import Account
 
 
+# noinspection PyUnusedLocal, PyArgumentList, PyBroadException, PyUnresolvedReferences
 class SessionService:
     def __init__(self):
-        # noinspection PyArgumentList
         self.env = Env()
-        self.cache = redis.Redis(self.env.redis_host)
+        self.cache = redis.Redis(self.env.redis_host, decode_responses=True)
 
-    # noinspection PyUnresolvedReferences
+    # noinspection
     def init(self, user: User, payload: InitOperation):
         self.revoke(user, payload.region)
         if not any(i.region == payload.region for i in self.env.endpoints):
@@ -41,21 +41,15 @@ class SessionService:
                 )
             )
         ))
-        self.cache.setex(email_hash(user.email), 1800, payload.region)
+        self.cache.set(email_encode(user.email), payload.region)
         return make_config(user.email, password, payload.region)
 
-    def keep(self, user: User):
-        if not self.cache.exists(user.email):
-            return
-        self.cache.expire(user.email, 1800)
-
     def revoke(self, user: User, region: str = None):
-        if not region and not self.cache.exists(email_hash(user.email)):
+        if not region and not self.cache.exists(email_encode(user.email)):
             return
-        if self.cache.exists(email_hash(user.email)):
-            region = self.cache.get(email_hash(user.email)).decode()
-        self.cache.delete(email_hash(user.email))
-        # noinspection PyBroadException
+        if self.cache.exists(email_encode(user.email)) and region is None:
+            region = self.cache.get(email_encode(user.email))
+            self.cache.delete(email_encode(user.email))
         try:
             client = GrpcClient(region)
             operation = to_typed_message(command.RemoveUserOperation(email=user.email))

@@ -6,6 +6,7 @@ from starlette.middleware.authentication import AuthenticationMiddleware
 from middleware.auth import AuthMiddleware
 sys.path.append(os.path.abspath("util/xray"))
 
+
 app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
 
 for i in os.listdir("controller"):

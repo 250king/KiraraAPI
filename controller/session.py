@@ -14,12 +14,6 @@ async def init_proxy(request: Request, payload: InitOperation):
     return config
 
 
-@router.options("/session")
-@requires(["Kirara玩家"])
-async def keep_proxy(request: Request):
-    proxy_service.keep(request.user)
-
-
 @router.delete("/session", status_code=204)
 @requires(["Kirara玩家"])
 async def revoke_session(request: Request):
