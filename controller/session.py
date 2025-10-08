@@ -8,13 +8,13 @@ proxy_service = SessionService()
 
 
 @router.post("/session")
-@requires(["Kirara玩家"])
+@requires(["authenticated"])
 async def init_proxy(request: Request, payload: InitOperation):
     config = proxy_service.init(request.user, payload)
     return config
 
 
 @router.delete("/session", status_code=204)
-@requires(["Kirara玩家"])
+@requires(["authenticated"])
 async def revoke_session(request: Request):
     proxy_service.revoke(request.user)

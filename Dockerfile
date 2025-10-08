@@ -11,6 +11,6 @@ RUN pip install --no-cache-dir grpcio\
     httpx\
     redis
 
-COPY src /app
+COPY . /app
 
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--proxy-headers", "--forwarded-allow-ips", "*"]

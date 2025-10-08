@@ -14,16 +14,19 @@ class AuthMiddleware(AuthenticationBackend):
         "exp": None,
     }
 
+    # noinspection PyBroadException
     async def authenticate(self, request):
         if "Authorization" not in request.headers:
-            return
+            return None
         value = request.headers["Authorization"]
         try:
             scheme, credentials = value.split()
             if scheme.lower() != "bearer":
-                return
+                return None
             jwt = JWT(check_claims=self.claims, key=self.key, jwt=credentials)
         except Exception:
-            return
+            return None
         data = User.model_validate(json.loads(jwt.claims))
-        return AuthCredentials(json.loads(jwt.claims)["groups"]), data
+        groups = json.loads(jwt.claims)["groups"]
+        groups.append("authenticated")
+        return AuthCredentials(groups), data

@@ -8,6 +8,6 @@ endpoint_service = EndpointService()
 
 # noinspection PyUnusedLocal
 @router.get("/endpoint")
-@requires(["Kirara玩家"])
+@requires(["authenticated"])
 def get_endpoints(request: Request):
     return endpoint_service.list_endpoints()

@@ -3,6 +3,7 @@ from model.data.endpoint import Endpoint
 
 
 class Env(BaseSettings):
+    folder_id: str
     client_id: str
     client_secret: str
     endpoints: list[Endpoint]

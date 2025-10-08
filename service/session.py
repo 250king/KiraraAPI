@@ -1,7 +1,7 @@
 import secrets
 import redis
-from fastapi import HTTPException
 import util.xray.app.proxyman.command.command_pb2 as command
+from fastapi import HTTPException
 from env import Env
 from model.data.init import InitOperation
 from model.data.user import User
@@ -45,14 +45,17 @@ class SessionService:
         return make_config(user.email, password, payload.region)
 
     def revoke(self, user: User, region: str = None):
-        if not region and not self.cache.exists(email_encode(user.email)):
-            return
-        if self.cache.exists(email_encode(user.email)) and region is None:
-            region = self.cache.get(email_encode(user.email))
+        regions = []
+        if region:
+            regions.append(region)
+        if self.cache.exists(email_encode(user.email)):
+            regions.append(self.cache.get(email_encode(user.email)))
             self.cache.delete(email_encode(user.email))
-        try:
-            client = GrpcClient(region)
-            operation = to_typed_message(command.RemoveUserOperation(email=user.email))
-            client.handler.AlterInbound(command.AlterInboundRequest(tag="default", operation=operation))
-        except Exception:
-            pass
+        regions = list(set(regions))
+        for i in regions:
+            try:
+                client = GrpcClient(region)
+                operation = to_typed_message(command.RemoveUserOperation(email=user.email))
+                client.handler.AlterInbound(command.AlterInboundRequest(tag="default", operation=operation))
+            except Exception:
+                pass
