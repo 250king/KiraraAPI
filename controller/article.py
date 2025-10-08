@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Response, Request
-from starlette.authentication import requires
 from service.article import ArticleService
 
 router = APIRouter()
